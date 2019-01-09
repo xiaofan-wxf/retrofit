@@ -48,6 +48,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.OPTIONS;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.OfflineMode;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.PartMap;
@@ -77,6 +78,7 @@ final class ServiceMethod<R, T> {
   private final boolean isFormEncoded;
   private final boolean isMultipart;
   private final ParameterHandler<?>[] parameterHandlers;
+  private final boolean isOfflineMode;
 
   ServiceMethod(Builder<R, T> builder) {
     this.callFactory = builder.retrofit.callFactory();
@@ -86,6 +88,7 @@ final class ServiceMethod<R, T> {
     this.httpMethod = builder.httpMethod;
     this.relativeUrl = builder.relativeUrl;
     this.headers = builder.headers;
+    this.isOfflineMode = builder.isOfflineMode;
     this.contentType = builder.contentType;
     this.hasBody = builder.hasBody;
     this.isFormEncoded = builder.isFormEncoded;
@@ -96,7 +99,7 @@ final class ServiceMethod<R, T> {
   /** Builds an HTTP request from method arguments. */
   Request toRequest(@Nullable Object... args) throws IOException {
     RequestBuilder requestBuilder = new RequestBuilder(httpMethod, baseUrl, relativeUrl, headers,
-        contentType, hasBody, isFormEncoded, isMultipart);
+        contentType, hasBody, isFormEncoded, isMultipart, isOfflineMode);
 
     @SuppressWarnings("unchecked") // It is an error to invoke a method with the wrong arg types.
     ParameterHandler<Object>[] handlers = (ParameterHandler<Object>[]) parameterHandlers;
@@ -138,6 +141,7 @@ final class ServiceMethod<R, T> {
     boolean gotPath;
     boolean gotQuery;
     boolean gotUrl;
+    boolean isOfflineMode;
     String httpMethod;
     boolean hasBody;
     boolean isFormEncoded;
@@ -275,6 +279,9 @@ final class ServiceMethod<R, T> {
           throw methodError("Only one encoding annotation is allowed.");
         }
         isFormEncoded = true;
+      } else if (annotation instanceof OfflineMode) {
+        OfflineMode offlineMode = (OfflineMode) annotation;
+        this.isOfflineMode = offlineMode.value();
       }
     }
 

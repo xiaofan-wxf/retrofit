@@ -42,19 +42,21 @@ final class RequestBuilder {
   private @Nullable MediaType contentType;
 
   private final boolean hasBody;
+  private final boolean offlineMode;
   private @Nullable MultipartBody.Builder multipartBuilder;
   private @Nullable FormBody.Builder formBuilder;
   private @Nullable RequestBody body;
 
   RequestBuilder(String method, HttpUrl baseUrl, @Nullable String relativeUrl,
       @Nullable Headers headers, @Nullable MediaType contentType, boolean hasBody,
-      boolean isFormEncoded, boolean isMultipart) {
+      boolean isFormEncoded, boolean isMultipart, boolean offlineMode) {
     this.method = method;
     this.baseUrl = baseUrl;
     this.relativeUrl = relativeUrl;
     this.requestBuilder = new Request.Builder();
     this.contentType = contentType;
     this.hasBody = hasBody;
+    this.offlineMode = offlineMode;
 
     if (headers != null) {
       requestBuilder.headers(headers);
@@ -225,6 +227,7 @@ final class RequestBuilder {
 
     return requestBuilder
         .url(url)
+        .supportOffline(offlineMode)
         .method(method, body)
         .build();
   }
